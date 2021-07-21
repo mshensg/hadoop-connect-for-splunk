@@ -113,6 +113,7 @@ def fini_stream():
     sys.stdout.write("</stream>")
 
 def send_data(source, buf):
+    buf = buf.decode()
     sys.stdout.write("<event unbroken=\"1\"><data>")
     sys.stdout.write(xml.sax.saxutils.escape(buf))
     sys.stdout.write("</data>\n<source>")
@@ -140,7 +141,7 @@ def get_encoded_csv_file_path(checkpoint_dir, conf_stanza):
 
     # MD5 the URL
     m = hashlib.md5()
-    m.update(conf_stanza)
+    m.update(str.encode(conf_stanza))
     name += "_" + m.hexdigest() + ".csv.gz"
 
     return os.path.join(checkpoint_dir, name)
@@ -187,7 +188,7 @@ class Checkpointer:
         tmp_file = self.chkpnt_file_name + ".tmp"
         f = None
         try:
-            f = gzip.open(tmp_file, "wb")
+            f = gzip.open(tmp_file, "wt")
         except Exception as e:
             logging.error("Unable to open file='%s' for writing: %s" % \
                 self.chkpnt_file_name, str(e))
@@ -202,7 +203,7 @@ class Checkpointer:
         self.last_chkpnt_time = time.time()
 
     def _load(self):
-        f = self._open_checkpoint_file("rb")
+        f = self._open_checkpoint_file("rt")
         if f is None:
             return
 
